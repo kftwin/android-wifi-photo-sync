@@ -5,14 +5,15 @@
 
 .DESCRIPTION
     - Downloads and installs Syncthing (LAN-only, no cloud)
-    - Creates H:\android-backup\{Camera,Screenshots,Downloads,Documents,Signal,WhatsApp}
+    - Creates <BackupRoot>\{Camera,Screenshots,Downloads,Documents,Signal,WhatsApp}
     - Opens Windows Firewall ports for Syncthing
     - Registers a Task Scheduler task so Syncthing starts on login automatically
     - Patches Syncthing config for local-only discovery (no global relay/discovery)
 
 .PARAMETER BackupRoot
-    Root folder for all backups. Default: H:\android-backup
+    Root folder for all backups. Default: C:\android-backup
     Subfolders Camera, Screenshots, Downloads, Documents, Signal, WhatsApp are created here.
+    Change this to any drive or folder you prefer, e.g. "D:\Backups\Phone" or "E:\android-backup".
 
 .EXAMPLE
     .\setup-windows.ps1
@@ -25,7 +26,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$BackupRoot = "H:\android-backup"
+    [string]$BackupRoot = "C:\android-backup"
 )
 
 Set-StrictMode -Version Latest

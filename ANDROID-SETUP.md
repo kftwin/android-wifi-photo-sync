@@ -6,13 +6,15 @@ Once done, everything runs hands-free whenever your phone is home on WiFi.
 **What gets backed up:**
 | Category | Where it ends up on your PC |
 |---|---|
-| Photos & screenshots | `H:\android-backup\Photos` |
-| Downloads | `H:\android-backup\Downloads` |
-| Documents | `H:\android-backup\Documents` |
-| Signal messages | `H:\android-backup\Signal` |
-| WhatsApp messages | `H:\android-backup\WhatsApp` |
-| App data (Swift Backup) | `H:\android-backup\Documents\SwiftBackup` |
-| SMS/MMS (SMS Backup & Restore) | `H:\android-backup\Documents\SMS-Backup` |
+| Photos & screenshots | `C:\android-backup\Photos` |
+| Downloads | `C:\android-backup\Downloads` |
+| Documents | `C:\android-backup\Documents` |
+| Signal messages | `C:\android-backup\Signal` |
+| WhatsApp messages | `C:\android-backup\WhatsApp` |
+| App data (Swift Backup) | `C:\android-backup\Documents\SwiftBackup` |
+| SMS/MMS (SMS Backup & Restore) | `C:\android-backup\Documents\SMS-Backup` |
+
+> This guide uses `C:\android-backup` as the backup location. You can change this during setup if you prefer a different drive or folder.
 
 ---
 
@@ -24,21 +26,32 @@ You need to complete the **Windows PC setup first**, before touching your phone.
 
 **On your PC:**
 
-1. Download or clone this repository so you have `setup-windows.ps1` on your PC
-2. Click the **Start menu** and search for **PowerShell**
-3. Right-click **Windows PowerShell** → click **Run as administrator**
-4. A blue terminal window opens. Type the following and press Enter — replace the path with wherever you saved the file:
+1. **Download the files:** Go to [github.com/kftwin/android-wifi-photo-sync](https://github.com/kftwin/android-wifi-photo-sync), click the green **Code** button, then click **Download ZIP**
+2. **Extract the ZIP:** Right-click the downloaded file → **Extract All** → choose a location like `C:\android-wifi-photo-sync` → click **Extract**
+3. Click the **Start menu** and search for **PowerShell**
+4. Right-click **Windows PowerShell** → click **Run as administrator**
+5. A blue terminal window opens. Type the following and press Enter — replace the path if you extracted to a different folder:
    ```
-   cd "D:\Coding\Sandbox\android-wifi-photo-sync"
+   cd "C:\android-wifi-photo-sync"
    ```
-5. Then run the script:
+6. Then run the script:
    ```
    .\setup-windows.ps1
    ```
-6. The script will install Syncthing, create the backup folders on your H: drive, set up firewall rules, and start Syncthing automatically. It prints `[OK]` for each step as it goes.
-7. When it finishes, open your browser and go to **http://127.0.0.1:8384** — you should see the Syncthing web interface. Leave this tab open.
+7. If Windows blocks the script with a security warning, run this first, then try step 6 again:
+   ```
+   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+   ```
+8. The script installs Syncthing, creates `C:\android-backup` with all backup subfolders, sets up firewall rules, and starts Syncthing automatically. It prints `[OK]` for each step.
+9. When it finishes, open your browser and go to **http://127.0.0.1:8384** — you should see the Syncthing web interface. Leave this tab open.
 
-> If you see a red error about "not running as administrator", close PowerShell and repeat from step 2, making sure to choose "Run as administrator".
+> **Want to save backups to a different drive?** Run the script like this instead:
+> ```
+> .\setup-windows.ps1 -BackupRoot "D:\Phone-Backup"
+> ```
+> Use any drive letter and folder name you like. Substitute your path wherever this guide shows `C:\android-backup`.
+
+> If you see a red error about "not running as administrator", close PowerShell and repeat from step 3, making sure to right-click and choose "Run as administrator".
 
 ---
 
@@ -65,7 +78,7 @@ You need to complete the **Windows PC setup first**, before touching your phone.
 
 ### Step 3: Disable battery optimization
 
-This is the most important phone setting. Without it, Samsung will kill Syncthing in the background and your phone will stop syncing.
+This is the most important phone setting. Without it, Android will kill Syncthing in the background and your phone will stop syncing.
 
 **On your phone:**
 
@@ -80,9 +93,9 @@ This is the most important phone setting. Without it, Samsung will kill Syncthin
 Also do this:
 
 6. While still in **Settings → Apps → Syncthing-Fork**, tap **Mobile data**
-7. Turn on **Allow background data usage** (Samsung ties background WiFi activity to this setting)
+7. Turn on **Allow background data usage** (some phones tie background WiFi activity to this setting)
 
-Finally, remove Syncthing-Fork from Samsung's sleeping apps list:
+Finally, remove Syncthing-Fork from any sleeping apps list:
 
 8. Go to **Settings → Device Care → Battery → Background usage limits**
 9. Check the **Sleeping apps** and **Deep sleeping apps** lists
@@ -110,7 +123,7 @@ You're going to tell Syncthing-Fork which folders on your phone to watch and syn
 
 > **Send Only is critical.** This ensures data flows from your phone to your PC only — never the other way. If you choose "Send & Receive", files on your PC could be deleted if they're not on your phone.
 
-> You can include both Camera and Screenshots in one folder, or create them separately. If you want Screenshots separate, repeat this step pointing to `DCIM/Screenshots` and label it `Screenshots`.
+> You can combine Camera and Screenshots into one folder, or keep them separate. To add Screenshots separately, repeat this step pointing to `DCIM/Screenshots` and label it `Screenshots`.
 
 ### Step 5: Add your Downloads folder
 
@@ -132,26 +145,26 @@ You're going to tell Syncthing-Fork which folders on your phone to watch and syn
 4. Set **Folder Type** to **Send Only**
 5. Tap **Save**
 
-> SMS backups and app backups will be saved into subfolders here later. No extra Syncthing folder needed for them.
+> SMS backups and app backups will be saved into subfolders here later. No extra Syncthing folder is needed for them.
 
 ### Step 7: Add your Signal folder
 
-> Complete Part 4 (Signal backups) first, then come back here to add the Signal folder — you need to know where Signal saves its backup files before you can point Syncthing at them.
+> Complete Part 4 (Signal backups) first so you know where Signal saves its backup files, then come back here.
 >
-> If you set Signal to back up to `Downloads/Signal-Backups/`, you can skip this step entirely — the Downloads folder (Step 5) already covers it.
+> If you set Signal to back up into `Downloads/Signal-Backups/`, you can skip this step — the Downloads folder (Step 5) already covers it.
 >
-> If you created a separate `Signal-Backups` folder elsewhere, add it here pointing to that path, labeled `Signal`, type **Send Only**.
+> If you chose a separate folder for Signal backups, add it here: tap **+**, browse to that folder, label it `Signal`, type **Send Only**, tap **Save**.
 
 ### Step 8: Add the WhatsApp folder (special steps required)
 
-WhatsApp stores its backup in a protected system folder that normal apps can't see. Syncthing-Fork has a special mode to access it.
+WhatsApp stores its backup in a protected system folder that normal apps cannot access. Syncthing-Fork has a special mode for this.
 
-**First, make sure WhatsApp has created at least one backup** (complete Part 5 first, then return here).
+**First, make sure WhatsApp has created at least one local backup** — complete Part 5, then return here.
 
 **On your phone:**
 
 1. Open **Syncthing-Fork** → tap **+** to add a folder
-2. Look for **Android Special Folder** option — it may appear as a toggle labeled "Use SAF" or a separate menu item. Tap it.
+2. Look for **Android Special Folder** — it may appear as a toggle labeled "Use SAF" or a separate menu item. Tap it.
 3. A system folder picker opens (this looks different from the normal file browser)
 4. Navigate through: **Internal Storage → Android → media → com.whatsapp → WhatsApp → Backups**
 5. Tap **Use this folder**
@@ -160,13 +173,13 @@ WhatsApp stores its backup in a protected system folder that normal apps can't s
 8. Set **Folder Type** to **Send Only**
 9. Tap **Save**
 
-> If you can't find `Android/media/com.whatsapp`, WhatsApp hasn't created a backup yet. Go to Part 5, run a manual backup, then return here.
+> If you cannot find `Android/media/com.whatsapp`, WhatsApp has not created a backup yet. Go to Part 5, run a manual backup, then return here.
 
 ---
 
 ## Part 3 — Connect Your Phone to Your PC
 
-Now you'll introduce the phone and PC to each other so they know to sync together.
+Now you will introduce the phone and PC to each other so they sync together.
 
 ### Step 9: Find your PC's Syncthing ID
 
@@ -175,7 +188,7 @@ Now you'll introduce the phone and PC to each other so they know to sync togethe
 1. Open your browser and go to **http://127.0.0.1:8384**
 2. Click **Actions** in the top-right corner
 3. Click **Show ID**
-4. A QR code appears along with a long text ID — keep this window open
+4. A QR code and a long device ID string appear — keep this window open
 
 ### Step 10: Add your PC as a device in Syncthing-Fork
 
@@ -185,7 +198,7 @@ Now you'll introduce the phone and PC to each other so they know to sync togethe
 2. Tap the **Devices** tab
 3. Tap **+** to add a new device
 4. Either:
-   - Tap the **QR code icon** and point your phone camera at your PC screen to scan the QR code
+   - Tap the **QR code icon** and point your phone camera at your PC screen to scan the code
    - Or tap **Enter manually** and type the device ID shown on your PC
 5. Set **Device Name** to something like `Home PC`
 6. Tap **Save**
@@ -194,16 +207,14 @@ Now you'll introduce the phone and PC to each other so they know to sync togethe
 
 **On your PC:**
 
-1. Watch the Syncthing web UI at **http://127.0.0.1:8384** — within a minute, a yellow popup will appear at the bottom saying something like _"New Device — [device ID] wants to connect"_
+1. Watch the Syncthing web UI at **http://127.0.0.1:8384** — within a minute, a yellow popup will appear at the bottom: _"New Device — [device ID] wants to connect"_
 2. Click **Add Device**
 3. Give it a name like `Android Phone`
 4. Click **Save**
 
 ### Step 12: Share each phone folder with your PC
 
-**On your phone:**
-
-For each folder you added (Photos, Downloads, Documents, Signal, WhatsApp):
+**On your phone** — for each folder you added (Photos, Downloads, Documents, Signal, WhatsApp):
 
 1. Open **Syncthing-Fork** → tap the **Folders** tab
 2. Tap the folder name
@@ -214,57 +225,54 @@ For each folder you added (Photos, Downloads, Documents, Signal, WhatsApp):
 
 ### Step 13: Accept each folder share on your PC
 
-**On your PC:**
-
-For each folder the phone shares, a yellow popup will appear in the Syncthing web UI:
+**On your PC** — for each folder the phone shares, a yellow popup appears:
 _"Android Phone wants to share folder [name]"_
 
 For each popup:
 
 1. Click **Add**
-2. A dialog opens. Change these two things:
-   - **Folder Type** → set to **Receive Only** (the PC receives, never sends back)
+2. In the dialog that opens, change two things:
+   - **Folder Type** → set to **Receive Only** (the PC receives files but never sends them back)
    - **Folder Path** → set to the matching path from the table below
 3. Click **Save**
 
-| Phone folder label | Set PC path to |
+| Phone folder label | Set this as the PC folder path |
 |---|---|
-| Photos | `H:\android-backup\Photos` |
-| Downloads | `H:\android-backup\Downloads` |
-| Documents | `H:\android-backup\Documents` |
-| Signal | `H:\android-backup\Signal` |
-| WhatsApp | `H:\android-backup\WhatsApp` |
+| Photos | `C:\android-backup\Photos` |
+| Downloads | `C:\android-backup\Downloads` |
+| Documents | `C:\android-backup\Documents` |
+| Signal | `C:\android-backup\Signal` |
+| WhatsApp | `C:\android-backup\WhatsApp` |
 
-> If a popup doesn't appear, wait 60 seconds and refresh the page. Make sure both devices are connected to the same WiFi network.
+> If a popup does not appear, wait 60 seconds and refresh the page. Make sure both devices are on the same WiFi network.
 
 ### Step 14: Confirm sync is working
 
 **On your PC:**
 
 1. Wait 3–5 minutes after completing Step 13
-2. Open **File Explorer** and navigate to `H:\android-backup\Photos`
-3. You should see photos from your phone's camera appearing
+2. Open **File Explorer** and navigate to `C:\android-backup\Photos`
+3. You should see photos from your phone appearing
 
 If nothing appears after 5 minutes, see the Troubleshooting section at the bottom.
 
 ### Step 15: Enable versioning (deleted file protection)
 
-This step makes Syncthing keep a copy of any file that gets deleted from your phone for 365 days, so you can recover it from the PC.
+This makes Syncthing keep a copy of every file deleted from your phone for 365 days, so you can recover it later.
 
 **On your PC:**
 
-1. Open **PowerShell as administrator** (same as the setup step — Start menu → PowerShell → Run as administrator)
-2. Navigate to where you saved `setup-windows.ps1`:
+1. Open **PowerShell as administrator** (Start menu → search PowerShell → right-click → Run as administrator)
+2. Navigate to the project folder:
    ```
-   cd "D:\Coding\Sandbox\android-wifi-photo-sync"
+   cd "C:\android-wifi-photo-sync"
    ```
-3. Run the script again (it's safe to re-run — it skips anything already done):
+3. Run the setup script again (it is safe to re-run — it skips anything already done):
    ```
    .\setup-windows.ps1
    ```
-4. This time it will also configure versioning on all your synced folders.
 
-> Deleted files are stored in a hidden `.stversions` folder inside each backup folder (e.g. `H:\android-backup\Photos\.stversions\`). To recover a deleted file, open that folder and find the file by date.
+> Deleted files are kept in a hidden `.stversions` folder inside each backup folder — for example `C:\android-backup\Photos\.stversions\`. To recover a deleted file, open that folder and find the file by date.
 
 ---
 
@@ -279,15 +287,15 @@ This step makes Syncthing keep a copy of any file that gets deleted from your ph
 3. Tap **Chats**
 4. Tap **Chat Backups**
 5. Toggle **Enable Backups** on
-6. Signal displays a **30-digit backup passphrase** — this is the only way to restore your messages
+6. Signal displays a **30-digit backup passphrase**
 
-> ⚠️ **Save this passphrase immediately** in a password manager (Bitwarden, 1Password, etc.) or write it down and store it safely. If you lose it, your backup file cannot be opened — ever.
+> ⚠️ **Save this passphrase immediately** in a password manager (Bitwarden, 1Password, etc.) or write it down and keep it somewhere safe. Without it, your backup file cannot be opened — ever.
 
-7. Signal shows a **folder picker** — navigate to your `Downloads` folder and create a new folder called `Signal-Backups` inside it, then tap **Use this folder**
+7. Signal shows a **folder picker** — navigate to your `Downloads` folder, create a new folder called `Signal-Backups` inside it, then tap **Use this folder**
 8. Set backup frequency to **Daily**
 9. Tap **Create Backup** to run the first backup now
 
-Signal will write a `.backup` file to `Downloads/Signal-Backups/`. Syncthing's Downloads folder picks this up automatically — no extra configuration needed.
+Signal writes a `.backup` file to `Downloads/Signal-Backups/`. Syncthing's Downloads folder picks it up automatically — no extra configuration needed.
 
 ---
 
@@ -298,16 +306,16 @@ Signal will write a `.backup` file to `Downloads/Signal-Backups/`. Syncthing's D
 **On your phone:**
 
 1. Open **WhatsApp**
-2. Tap the **three dots** (⋮) in the top-right corner → **Settings**
+2. Tap the **three dots** (top-right corner) → **Settings**
 3. Tap **Chats**
 4. Tap **Chat backup**
 5. Under **Back up to Google Drive** → set to **Never** (removes the Google Drive dependency)
 6. Under **Back up to local storage** → set frequency to **Daily**
 7. Tap **Back Up Now** to create your first backup immediately
 
-After the backup completes, a backup file appears in WhatsApp's backup folder. This is what Syncthing-Fork copies to `H:\android-backup\WhatsApp\` on the next sync.
+After the backup completes, Syncthing-Fork copies the backup file to `C:\android-backup\WhatsApp\` on the next sync.
 
-> If you haven't added the WhatsApp folder to Syncthing-Fork yet (Step 8), go back and do that now.
+> If you have not added the WhatsApp folder to Syncthing-Fork yet (Step 8), go back and do that now.
 
 ---
 
@@ -334,7 +342,7 @@ After the backup completes, a backup file appears in WhatsApp's backup folder. T
 6. Under **Back up**, make sure both **SMS** and **MMS** are checked
 7. Tap **Back Up Now** to create the first backup immediately
 
-The backup files (`.xml` format) land in `Documents/SMS-Backup/`. Syncthing's Documents folder copies them to `H:\android-backup\Documents\SMS-Backup\` automatically.
+The backup files land in `Documents/SMS-Backup/`. Syncthing's Documents folder copies them to `C:\android-backup\Documents\SMS-Backup\` automatically.
 
 ---
 
@@ -361,7 +369,7 @@ The backup files (`.xml` format) land in `Documents/SMS-Backup/`. Syncthing's Do
 3. Select **Apps + Data**
 4. Tap **Start Backup**
 
-The backup files land in `Documents/SwiftBackup/` and Syncthing copies them to `H:\android-backup\Documents\SwiftBackup\` automatically.
+The backup files land in `Documents/SwiftBackup/` and Syncthing copies them to `C:\android-backup\Documents\SwiftBackup\` automatically.
 
 ### Step 22: Schedule nightly backups
 
@@ -371,22 +379,22 @@ The backup files land in `Documents/SwiftBackup/` and Syncthing copies them to `
 2. Set to run **Nightly**
 3. Enable **Only while charging** and **Only on WiFi**
 
-> **Note:** Some apps (most banking apps, some games) don't allow their data to be backed up — this is an Android security restriction, not a limitation of Swift Backup. The app itself (the installer APK) is still backed up and can be reinstalled. Only the app's saved data (login state, settings, progress) won't restore for those specific apps.
+> **Note:** Some apps — mostly banking apps and some games — do not allow their data to be backed up. This is an Android security restriction. Swift Backup still saves the app installer (APK) so you can reinstall the app, but saved data like login state or game progress will not restore for those apps.
 
 ---
 
 ## Part 8 — Recovering Deleted Files
 
-Syncthing keeps a copy of every file deleted from your phone for 365 days on your PC.
+Syncthing keeps a copy of every file deleted from your phone for 365 days.
 
 **On your PC:**
 
 1. Open **File Explorer**
-2. Navigate to the backup folder for the type of file you need — for example `H:\android-backup\Photos`
-3. Show hidden files: in File Explorer, click **View → Show → Hidden items**
+2. Navigate to the backup folder — for example `C:\android-backup\Photos`
+3. Enable hidden files: click **View** in the toolbar → **Show** → **Hidden items**
 4. Open the `.stversions` folder
-5. Find your file — files are sorted by date
-6. Copy it back to the main folder (or anywhere you need it)
+5. Find your file — files are organised by date
+6. Copy it back to the main folder or wherever you need it
 
 ---
 
@@ -396,12 +404,12 @@ Follow this exact order when setting up a new or reformatted phone.
 
 ### Step A — WhatsApp (do this BEFORE finishing WhatsApp setup)
 
-> ⚠️ If you complete WhatsApp registration without restoring your backup first, your message history is gone. Do this step before you open WhatsApp for the first time.
+> ⚠️ If you complete WhatsApp registration without restoring your backup first, your message history cannot be recovered. Do this before you open WhatsApp for the first time on the new phone.
 
 **On your PC:**
 1. Connect your phone to your PC with a USB cable
 2. On your phone, tap **File Transfer** (or **MTP**) when the USB prompt appears
-3. Copy the entire `H:\android-backup\WhatsApp\` folder to your phone at: `Internal Storage\WhatsApp\Backups\`
+3. Copy the entire contents of `C:\android-backup\WhatsApp\` to your phone at: `Internal Storage\WhatsApp\Backups\`
 
 **On your phone:**
 4. Install **WhatsApp** from the Play Store
@@ -411,7 +419,7 @@ Follow this exact order when setting up a new or reformatted phone.
 ### Step B — Signal (during first-launch setup)
 
 **On your PC:**
-1. Copy the `.backup` file from `H:\android-backup\Signal\` to your phone via USB — put it anywhere accessible
+1. Copy the `.backup` file from `C:\android-backup\Signal\` to your phone via USB — put it anywhere accessible
 
 **On your phone:**
 2. Install **Signal** from the Play Store
@@ -422,20 +430,20 @@ Follow this exact order when setting up a new or reformatted phone.
 
 ### Step C — Photos, Downloads, and other files
 
-**Option 1 (USB — faster for large amounts of data):**
+**Option 1 — USB (faster for large amounts of data):**
 1. Connect phone via USB
-2. Copy folders from `H:\android-backup\` back to your phone
+2. Copy folders from `C:\android-backup\` back to your phone
 
-**Option 2 (WiFi — hands-free):**
+**Option 2 — WiFi (hands-free):**
 1. Set up Syncthing-Fork again (repeat Parts 1–3 of this guide)
-2. The files sync back automatically — the PC keeps its files even though the phone sent them originally
+2. Files sync back automatically — the PC keeps its copy regardless of what was on your phone
 
 ### Step D — Apps (Swift Backup)
 
 **On your phone:**
-1. Install **Swift Backup** from the Play Store (or find the APK in `H:\android-backup\Documents\SwiftBackup\`)
+1. Install **Swift Backup** from the Play Store (or find the APK in `C:\android-backup\Documents\SwiftBackup\`)
 2. Open Swift Backup → tap **Restore**
-3. Point it to `Documents/SwiftBackup/` on your phone (copy from PC via USB first)
+3. Copy `C:\android-backup\Documents\SwiftBackup\` to your phone via USB first, then point Swift Backup at that folder
 4. Restore apps one at a time
 5. After each restore, re-grant any special permissions the app needs (accessibility, notification access, etc.)
 
@@ -453,39 +461,39 @@ Follow this exact order when setting up a new or reformatted phone.
 
 **On your PC:**
 
-1. Open **PowerShell** (no need for admin this time)
+1. Open **PowerShell** (no need for admin this time — just search PowerShell in the Start menu and open it normally)
 2. Navigate to the project folder:
    ```
-   cd "D:\Coding\Sandbox\android-wifi-photo-sync"
+   cd "C:\android-wifi-photo-sync"
    ```
 3. Run:
    ```
    .\check-sync-status.ps1
    ```
-4. This shows whether Syncthing is running, your phone's connection status, and how many files are in each backup folder
+4. This shows whether Syncthing is running, whether your phone is connected, and how many files are in each backup folder
 
 ---
 
 ## Troubleshooting
 
-**Phone shows as disconnected in Syncthing web UI**
-- Make sure both devices are on the same WiFi network (not one on a guest network)
+**Phone shows as disconnected in the Syncthing web UI**
+- Make sure both devices are on the same WiFi network (not one on a guest network and the other on the main network)
 - Open Syncthing-Fork on your phone — this wakes it up if Android put it to sleep
-- If you have a VPN active on either device, turn it off — VPNs prevent direct LAN connections
+- If you have a VPN active on either device, turn it off — VPNs prevent direct local network connections
 
-**Files not appearing in `H:\android-backup\` after 5 minutes**
-- Check the Syncthing web UI at **http://127.0.0.1:8384** — is your phone listed? Is it connected?
-- If Syncthing isn't running on the PC: open PowerShell as administrator and run `Start-ScheduledTask -TaskName Syncthing`
-- Check that each folder on the PC is set to **Receive Only** (not Send & Receive)
+**Files not appearing in `C:\android-backup\` after 5 minutes**
+- Check the Syncthing web UI at **http://127.0.0.1:8384** — is your phone listed and shown as Connected?
+- If Syncthing is not running on the PC: open PowerShell as administrator and run `Start-ScheduledTask -TaskName Syncthing`
+- Check that each folder on the PC is set to **Receive Only** (click the folder in the web UI, then Edit, and check Folder Type)
 
 **Sync worked once but stopped after a few days**
-- Samsung may have re-added Syncthing-Fork to its sleeping apps list — repeat Step 3
-- Open Syncthing-Fork and check for any error banners at the top
+- Android may have re-added Syncthing-Fork to its sleeping apps list — repeat Step 3
+- Open Syncthing-Fork and check for any error banners at the top of the screen
 
-**WhatsApp folder not appearing in the SAF folder picker (Step 8)**
+**WhatsApp folder not appearing in the folder picker (Step 8)**
 - WhatsApp must create at least one local backup first — complete Part 5, then return to Step 8
-- Verify the folder exists by opening a file manager and navigating to `Android/media/com.whatsapp/WhatsApp/Backups/`
+- Verify the folder exists by opening a file manager app and browsing to `Android/media/com.whatsapp/WhatsApp/Backups/`
 
 **Signal backup file not syncing**
-- Signal backup must be enabled — it is OFF by default. Complete Part 4 (Step 16).
+- Signal backup is OFF by default — complete Part 4 (Step 16) to enable it
 - Confirm the backup file exists on your phone at `Downloads/Signal-Backups/`
